@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html ng-app="examApp">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unified Examination Result</title>
+    <title>UNIFIED | EXAMINATION RESULT</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,211 +12,280 @@
         }
 
         body {
-            min-height: 100vh;
-            background-color: white;
+            overflow-x: hidden;
         }
 
-        .header {
-            background-color: #FF9980;
-            padding: 1rem;
+        .top-header {
+            background: #FFA07A;
+            color: white;
+            padding: 15px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            height: 60px;
         }
 
-        .header h1 {
+        .menu-icon {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #007B8E;
+            height: calc(100vh - 60px);
+            position: fixed;
             color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
+            transition: transform 0.3s ease;
+            top: 60px;
+            overflow-y: auto;
         }
 
-        .header span {
+        .sidebar.collapsed {
+            transform: translateX(-250px);
+        }
+
+        .logo {
+            padding: 20px;
+        }
+
+        .search-box {
+            padding: 10px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            background: #006476;
             color: white;
         }
 
+        .menu-icon {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .menu-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .search-box {
+            padding: 10px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            background: #006476;
+            color: white;
+            border-radius: 4px;
+        }
+        
         .main-content {
-            padding: 1rem;
-            max-width: 1200px;
-            margin: 0 auto;
+            margin-left: 270px; /* 250px + 20px gap */
+            margin-top: 80px; /* header height + extra space */
+            padding: 20px;
+            transition: margin-left 0.3s ease;
         }
 
-        .semester-header {
-            background-color: #2F8080;
+        .main-content.expanded {
+            margin-left: 20px;
+        }
+
+        .result-header {
+            background: #2F7B76;
             color: white;
-            padding: 1rem;
+            padding: 15px;
+            margin: 20px 0;
             text-align: center;
-            margin-bottom: 1.5rem;
         }
 
-        .semester-header h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
+        .student-info {
+            margin: 20px 0;
         }
 
-        .student-details {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        @media (min-width: 768px) {
-            .student-details {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        .student-details div {
-            color: #374151;
-        }
-
-        .student-details span {
-            font-weight: 600;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
+        .result-table {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid #E5E7EB;
+            margin: 20px 0;
         }
 
-        th, td {
-            border: 1px solid #E5E7EB;
-            padding: 0.5rem;
+        .result-table th, .result-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
             text-align: left;
         }
 
-        thead tr {
-            background-color: #F9FAFB;
+        .result-table tr:nth-child(even) {
+            background: #f9f9f9;
         }
 
-        .footer-info {
-            margin-top: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            color: #374151;
+        .gpa-section {
+            margin: 20px 0;
+            padding: 10px;
+            border-top: 1px solid #ddd;
         }
 
-        @media (min-width: 768px) {
-            .footer-info {
-                flex-direction: row;
-                justify-content: space-between;
+        .disclaimer {
+            font-size: 12px;
+            color: #666;
+            margin: 20px 0;
+        }
+
+        .print-btn {
+            background: #4285f4;
+            color: white;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 4px;
+            float: right;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        @media print {
+            .sidebar, .top-header {
+                display: none;
             }
-        }
-
-        .footer-info span {
-            font-weight: 600;
+            .main-content {
+                margin-left: 0;
+                margin-top: 0;
+            }
         }
     </style>
 </head>
-<body>
-    <header class="header">
-        <h1>UNIFIED | EXAMINATION RESULT</h1>
-        <div>
-            <span>231101004@rajalakshmi.edu.in</span>
-        </div>
+<body ng-controller="ExamController">
+    <header class="top-header">
+        <span class="menu-icon" ng-click="toggleSidebar()">☰</span>
+        UNIFIED | EXAMINATION RESULT
     </header>
 
-    <main class="main-content">
-        <div class="semester-header">
-            <h2>END SEMESTER EXAMINATION RESULT - ODD 2024-2025</h2>
+    <nav class="sidebar" ng-class="{'collapsed': isSidebarCollapsed}">
+        <div class="search-box">
+            <input type="text" placeholder="Search...">
+        </div>
+        <div class="menu-item">Administration (1)</div>
+        <div class="menu-item">Attendance (2)</div>
+        <div class="menu-item">Hostel (1)</div>
+        <div class="menu-item">My Info (3)</div>
+        <div class="menu-item">Examination Result</div>
+        <div class="menu-item">myProfile</div>
+        <div class="menu-item">UpComing Training/Placement Event</div>
+        <div class="menu-item">Training (1)</div>
+        <div class="menu-item">Transport (1)</div>
+    </nav>
+
+    <main class="main-content" ng-class="{'expanded': isSidebarCollapsed}">
+        <h2>EXAMINATION RESULT</h2>
+        
+        <div class="result-header">
+            END SEMESTER EXAMINATION RESULT - EVEN 2023-2024
         </div>
 
-        <div class="student-details">
-            <div>
-                <span>Branch : </span>
-                BE-MECH
-            </div>
-            <div>
-                <span>Name : </span>
-                ADITHYA M S
-            </div>
-            <div>
-                <span>Register Number : </span>
-                231101004
-            </div>
+        <div class="student-info">
+            <p>Branch : BE-MECH &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Name : ADITHYA M S &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Register Number : 231101004</p>
+        </div>
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th>SEMESTER</th>
+                    <th>SUBJECT CODE</th>
+                    <th>SUBJECT NAME</th>
+                    <th>GRADE</th>
+                    <th>RESULT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>3</td>
+                    <td>CS23422</td>
+                    <td>Python Programming for Machine Learning</td>
+                    <td>O</td>
+                    <td>Pass</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>MA23331</td>
+                    <td>Transforms and Statistics</td>
+                    <td>B+</td>
+                    <td>Pass</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>ME23311</td>
+                    <td>Engineering Thermodynamics</td>
+                    <td>B+</td>
+                    <td>Pass</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>ME23312</td>
+                    <td>Manufacturing Technology I</td>
+                    <td>A+</td>
+                    <td>Pass</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>ME23313</td>
+                    <td>Kinematics of Machinery</td>
+                    <td>A</td>
+                    <td>Pass</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>ME23321</td>
+                    <td>Manufacturing Technology Lab - I</td>
+                    <td>O</td>
+                    <td>Pass</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>ME23331</td>
+                    <td>Strength of Material</td>
+                    <td>A</td>
+                    <td>Pass</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="gpa-section">
+            <p>GPA : 8.29 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Result Published Date : 19-02-2025</p>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>SEMESTER</th>
-                        <th>SUBJECT CODE</th>
-                        <th>SUBJECT NAME</th>
-                        <th>GRADE</th>
-                        <th>RESULT</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>3</td>
-                        <td>CS23422</td>
-                        <td>Python Programming for Machine Learning</td>
-                        <td>O</td>
-                        <td>Pass</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>MA23331</td>
-                        <td>Transforms and Statistics</td>
-                        <td>B+</td>
-                        <td>Pass</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>ME23311</td>
-                        <td>Engineering Thermodynamics</td>
-                        <td>B+</td>
-                        <td>Pass</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>MA23312</td>
-                        <td>Manufacturing Technology - I</td>
-                        <td>A+</td>
-                        <td>Pass</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>ME23313</td>
-                        <td>Kinematics of Machinery</td>
-                        <td>A</td>
-                        <td>Pass</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>ME23321</td>
-                        <td>Manufacturing Technology Lab - I</td>
-                        <td>O</td>
-                        <td>Pass</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>ME23331</td>
-                        <td>Strength of Material</td>
-                        <td>A</td>
-                        <td>Pass</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div>
+            <p>For Students admitted from 2021 onwards: WH & WH1 - With Held, U - Re-appearance, U* - Absent, SA - Shortage of Attendance</p>
+            <p>For others : WH & WH1 - With Held, RA* - Absent, RA - Re-appearance</p>
         </div>
 
-        <div class="footer-info">
-            <div>
-                <span>GPA : </span>
-                7.81
-            </div>
-            <div>
-                <span>Result Published Date : </span>
-                22-02-2025
-            </div>
+        <div class="disclaimer">
+            <p>** WH - Please Contact Admin & WH1 - Please Contact COE Office</p>
+            <p>Disclaimer: The result published at www.rajalakshmi.in is PROVISIONAL only. We are not responsible for any inadvertent error that may have crept in the data / results being published on the Internet. This is being published on the Internet just for immediate information to the examinees. The final mark sheets issued by the College should only be treated authentic and final in this regard.</p>
+            <p>PrintDate : 02/22/2025</p>
         </div>
+
+        <button class="print-btn" onclick="window.print()">PRINT</button>
     </main>
+
+    <script>
+        var app = angular.module('examApp', []);
+        app.controller('ExamController', function($scope) {
+            $scope.isSidebarCollapsed = false;
+            
+            $scope.toggleSidebar = function() {
+                $scope.isSidebarCollapsed = !$scope.isSidebarCollapsed;
+            };
+        });
+    </script>
 </body>
 </html>
